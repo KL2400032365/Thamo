@@ -106,6 +106,50 @@ app.MapGet("/me", (System.Security.Claims.ClaimsPrincipal user) =>
     return Results.Ok(new { Id = id });
 }).RequireAuthorization();
 
+// Seed test data endpoint (call once to create testuser and sample courses)
+app.MapPost("/api/seed", async (UserManager<IdentityUser> userManager, ApplicationDbContext db) =>
+{
+    var existingUser = await userManager.FindByNameAsync("testuser");
+    if (existingUser != null) return Results.Ok(new { message = "Test user already exists" });
+
+    // Create test user
+    var user = new IdentityUser { UserName = "testuser", Email = "test@example.com" };
+    var result = await userManager.CreateAsync(user, "Test@12345");
+    if (!result.Succeeded) return Results.BadRequest(result.Errors);
+
+    // Create sample courses
+    var course1 = new Course { Title = "Software Engineering", Code = "CS101", Description = "Learn modern software development practices" };
+    var course2 = new Course { Title = "Web Development", Code = "CS201", Description = "Master full-stack web development" };
+    db.Courses.Add(course1);
+    db.Courses.Add(course2);
+    await db.SaveChangesAsync();
+
+    // Create enrollments for test user
+    db.Enrollments.Add(new Enrollment { UserId = user.Id, CourseId = course1.Id, IsTeacher = false });
+    db.Enrollments.Add(new Enrollment { UserId = user.Id, CourseId = course2.Id, IsTeacher = true });
+    await db.SaveChangesAsync();
+
+    // Create sample assignment
+    var assignment = new Assignment
+    {
+        Title = "Build a Todo App",
+        Description = "Create a responsive todo application using HTML, CSS, and JavaScript",
+        Deadline = DateTime.UtcNow.AddDays(7),
+        Marks = 100,
+        CourseId = course1.Id,
+        AnonymousReview = true
+    };
+    db.Assignments.Add(assignment);
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new { 
+        message = "Seeding complete!", 
+        user = new { user.Id, user.UserName, user.Email },
+        courses = new[] { course1.Title, course2.Title },
+        assignment = assignment.Title
+    });
+});
+
 app.MapControllers();
 
 app.Run();

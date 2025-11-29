@@ -183,6 +183,28 @@ document.getElementById('resetForm').addEventListener('submit', async (e) => {
 });
 
 // Set focus to username field on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('username').focus();
+    
+    // Auto-seed test data on first load (optional - for demo purposes)
+    const seeded = localStorage.getItem('seeded');
+    if (!seeded) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/seed`, { method: 'POST' });
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Seeding complete:', data);
+                localStorage.setItem('seeded', 'true');
+                
+                // Auto-login after seeding
+                setTimeout(() => {
+                    document.getElementById('username').value = 'testuser';
+                    document.getElementById('password').value = 'Test@12345';
+                    document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+                }, 500);
+            }
+        } catch (err) {
+            console.log('Seeding skipped or already seeded');
+        }
+    }
 });
