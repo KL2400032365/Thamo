@@ -2,13 +2,46 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
+// Configure DbContext and Identity
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=revi.db"));
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = false
+        };
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+// Enable static file serving for wwwroot
+app.UseStaticFiles();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -50,20 +83,20 @@ app.MapGet("/weatherforecast", () =>
 // Minimal auth endpoints (register/login) - basic examples
 app.MapPost("/auth/register", async (UserManager<IdentityUser> userManager, RegisterRequest req) =>
 {
-    var user = new IdentityUser { UserName = req.Email, Email = req.Email };
+    var user = new IdentityUser { UserName = req.Username, Email = req.Email };
     var result = await userManager.CreateAsync(user, req.Password);
     if (!result.Succeeded) return Results.BadRequest(result.Errors);
-    return Results.Ok(new { user.Id, user.Email });
+    return Results.Ok(new { user.Id, user.UserName, user.Email });
 });
 
 app.MapPost("/auth/login", async (UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, LoginRequest req) =>
 {
-    var user = await userManager.FindByEmailAsync(req.Email);
+    var user = await userManager.FindByNameAsync(req.Username);
     if (user == null) return Results.Unauthorized();
     var result = await signInManager.CheckPasswordSignInAsync(user, req.Password, false);
     if (!result.Succeeded) return Results.Unauthorized();
     // In a real application issue a JWT here. This scaffold returns basic user info.
-    return Results.Ok(new { user.Id, user.Email });
+    return Results.Ok(new { user.Id, user.UserName, user.Email });
 });
 
 app.MapGet("/me", (System.Security.Claims.ClaimsPrincipal user) =>
@@ -77,14 +110,6 @@ app.MapControllers();
 
 app.Run();
 
-// DTOs and minimal model used by the scaffold
-public record RegisterRequest(string Email, string Password);
-public record LoginRequest(string Email, string Password);
-
-public class WeatherForecast
-{
-    public DateTime Date { get; set; }
-    public int TemperatureC { get; set; }
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-    public string? Summary { get; set; }
-}
+// DTOs used by the scaffold
+public record RegisterRequest(string Username, string Email, string Password);
+public record LoginRequest(string Username, string Password);

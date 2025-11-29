@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revi - Dashboard</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>Revi</h2>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" onclick="showSection('home')">
+                    <span class="icon">🏠</span> Home
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('courses')">
+                    <span class="icon">📚</span> Courses
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('assignments')">
+                    <span class="icon">📝</span> Assignments
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('reviews')">
+                    <span class="icon">👁️</span> Reviews
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('discussions')">
+                    <span class="icon">💬</span> Discussions
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('notifications')">
+                    <span class="icon">🔔</span> Notifications
+                </a>
+            </nav>
+            <div class="user-section">
+                <button onclick="logout()" class="btn-logout">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <h1 id="pageTitle">Welcome to Revi</h1>
+                <div class="user-info">
+                    <span id="userEmail">User</span>
+                </div>
+            </header>
+
+            <!-- Content Sections -->
+            <div class="content">
+                <!-- Home Section -->
+                <section id="home" class="section active">
+                    <div class="welcome-card">
+                        <h2>Welcome to Revi Platform</h2>
+                        <p>Your collaborative peer review and assignment management system</p>
+                        <p>Use the sidebar to navigate through courses, assignments, and reviews.</p>
+                    </div>
+                </section>
+
+                <!-- Courses Section -->
+                <section id="courses" class="section">
+                    <div class="section-header">
+                        <h2>My Courses</h2>
+                        <button class="btn-primary" onclick="showCreateCourse()">+ New Course</button>
+                    </div>
+                    <div id="coursesList" class="cards-grid">
+                        <p class="placeholder">No courses yet. Create or join a course to get started.</p>
+                    </div>
+                </section>
+
+                <!-- Assignments Section -->
+                <section id="assignments" class="section">
+                    <div class="section-header">
+                        <h2>Assignments</h2>
+                    </div>
+                    <div id="assignmentsList" class="cards-grid">
+                        <p class="placeholder">No assignments yet.</p>
+                    </div>
+                </section>
+
+                <!-- Reviews Section -->
+                <section id="reviews" class="section">
+                    <div class="section-header">
+                        <h2>Peer Reviews</h2>
+                    </div>
+                    <div id="reviewsList" class="cards-grid">
+                        <p class="placeholder">No reviews pending.</p>
+                    </div>
+                </section>
+
+                <!-- Discussions Section -->
+                <section id="discussions" class="section">
+                    <div class="section-header">
+                        <h2>Discussions</h2>
+                    </div>
+                    <div id="discussionsList" class="cards-grid">
+                        <p class="placeholder">No discussions yet.</p>
+                    </div>
+                </section>
+
+                <!-- Notifications Section -->
+                <section id="notifications" class="section">
+                    <div class="section-header">
+                        <h2>Notifications</h2>
+                    </div>
+                    <div id="notificationsList" class="notifications-list">
+                        <p class="placeholder">No notifications.</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Create Course -->
+    <div id="courseModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" onclick="closeCourseModal()">&times;</span>
+            <h2>Create New Course</h2>
+            <form id="courseForm">
+                <div class="form-group">
+                    <label for="courseTitle">Course Title</label>
+                    <input type="text" id="courseTitle" placeholder="Enter course title" required>
+                </div>
+                <div class="form-group">
+                    <label for="courseCode">Course Code</label>
+                    <input type="text" id="courseCode" placeholder="e.g., CS101" required>
+                </div>
+                <div class="form-group">
+                    <label for="courseDesc">Description</label>
+                    <textarea id="courseDesc" placeholder="Enter course description" rows="4"></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Create Course</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
